@@ -1,50 +1,47 @@
 #include "main.h"
+#include <unistd.h>
 /**
- * _printf - Printf function
- * @format: format.
- * Return: number of printed chars.
+ * _printf - Emulate the original.
+ *
+ * @format: Format by specifier.
+ *
+ * Return: count of chars.
  */
 int _printf(const char *format, ...)
 {
-	int i, printed = 0, printed_chars = 0;
+	int i = 0, count = 0, count_fun;
 	va_list args;
 
-	if (format == NULL)
-		return (-1);
-
 	va_start(args, format);
-
-	for(i = 0; format[i] != '\0'; i++)
+	if (!format || (format[0] == '%' && !format[1]))
+		return (-1);
+	if (format[0] == '%' && format[1] == ' ' && !format[2])
+		return (-1);
+	while (format[i])
 	{
-		if(format[i] != '%')
+		count_fun = 0;
+		if (format[i] == '%')
 		{
-			_putchar(format[i]);
-		}
-		else if(format[i + 1] == 'c')
-		{
-			_putchar(va_arg(args, int));
-		}
-		else if(format[i + 1] == 's')
-		{
-			printed_str = _putstr(va_arg(args, char *));
+			if (!format[i + 1] || (format[i + 1] == ' ' && !format[i + 2]))
+			{
+				count = -1;
+				break;
+			}
+			count_fun += get_function(format[i + 1], args);
+			if (count_fun == 0)
+				count += _putchar(format[i + 1]);
+			if (count_fun == -1)
+				count = -1;
 			i++;
-			printed_chars += (printed_str - 1);
 		}
-		else if(format[i + 1] == '%')
+		else
 		{
-			_putchar('%')
+			(count == -1) ? (_putchar(format[i])) : (count += _putchar(format[i]));
 		}
-		else if(format[i + 1] == 'd' || format[i + 1] == 'i')
-		{
-			printed_int = _putint(va_arg(args, int *));
-			printed_chars += printed_int;
-		}
-		
-
-		printed_chars++;
+		i++;
+		if (count != -1)
+			count += count_fun;
 	}
-
 	va_end(args);
-
-	return(printed_chars);
+	return (count);
 }
